@@ -1,0 +1,3 @@
+[submodule "Node.JS/AWS/aws-nodejs-sample"]
+	path = Node.JS/AWS/aws-nodejs-sample
+	url = https://github.com/awslabs/aws-nodejs-sample.git
