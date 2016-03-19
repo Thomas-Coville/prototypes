@@ -4,7 +4,7 @@ var AWS = require('aws-sdk-promise');
 var express = require('express');
 var app = express();
 
-AWS.config.update({ endpoint: "http://localhost:8002" })
+AWS.config.update({ endpoint: "http://localhost:8002", region:"us-east-1" })
 
 //var db = new AWS.DynamoDB({ endpoint: "http://localhost:8002" })
 
