@@ -1,3 +1,9 @@
 [submodule "Node.JS/AWS/aws-nodejs-sample"]
 	path = Node.JS/AWS/aws-nodejs-sample
 	url = https://github.com/awslabs/aws-nodejs-sample.git
+[submodule "Node.JS/Samples/open-mariage"]
+	path = Node.JS/Samples/open-mariage
+	url = https://github.com/ericf/open-marriage.git
+[submodule "Node.JS/Samples/npm-www"]
+	path = Node.JS/Samples/npm-www
+	url = https://github.com/npm/npm-www.git
