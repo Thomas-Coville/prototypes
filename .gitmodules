@@ -7,3 +7,9 @@
 [submodule "Node.JS/Samples/npm-www"]
 	path = Node.JS/Samples/npm-www
 	url = https://github.com/npm/npm-www.git
+[submodule "Node.JS/Samples/fullstack-react"]
+	path = Node.JS/Samples/fullstack-react
+	url = https://github.com/Widen/fullstack-react.git
+[submodule "Node.JS/Samples/falcor-router-demo"]
+	path = Node.JS/Samples/falcor-router-demo
+	url = https://github.com/Netflix/falcor-router-demo.git
