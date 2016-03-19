@@ -2,12 +2,12 @@
 var Router = require('falcor-router');
 var AWS = require('aws-sdk-promise');
 var express = require('express');
+var StringBuilder = require('stringbuilder')
 var app = express();
 
-AWS.config.update({ endpoint: "http://localhost:8002", region:"us-east-1" })
+StringBuilder.extend('string');
 
-//var db = new AWS.DynamoDB({ endpoint: "http://localhost:8002" })
-
+AWS.config.update({ endpoint: "http://localhost:8002", region: "us-east-1" })
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
@@ -43,22 +43,28 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
             }
         },
         {
-            route: 'waveforms[{keys:waveformids}]',            
+            route: 'waveformsById[{keys:waveformids}]',            
             get : function (pathSet) {
                 var result = []
                 
                 var params = {
                     TableName : "MixGenius.Waveforms",
-                    KeyConditionExpression: "#wid = :id",
-                    ExpressionAttributeNames: {
-                        "#wid": "year"
-                    },
-                    ExpressionAttributeValues: {
-                        ":id": 1985
-                    }
+                    FilterExpression : "",
+                    ExpressionAttributeValues : {}
                 };
                 
-                return docClient.query(params)
+                var sb = new StringBuilder();
+                
+                pathSet.waveformids.forEach(function (id, idx) {
+                    if (idx > 0) {
+                        params.FilterExpression = params.FilterExpression + " OR ";
+                    }
+                    var key = ":id{0}".format(idx);
+                    params.FilterExpression = params.FilterExpression + "WaveformId = {0}".format(key);
+                    params.ExpressionAttributeValues[key] = id;
+                });
+                
+                return docClient.scan(params)
                     .promise()
                     .then(function (response, err) {
                     if (err) {
@@ -66,7 +72,7 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                     } else {
                         response.data.Items.forEach(function (entry) {
                             result.push({
-                                path: ["waveforms", entry.WaveformId, "waveform"], 
+                                path: ["waveformsById", entry.WaveformId], 
                                 value: entry
                             })
                         });
