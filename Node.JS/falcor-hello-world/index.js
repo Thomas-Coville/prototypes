@@ -75,14 +75,27 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                 var params = {
                     TableName : "MixGenius.Waveforms",
                     ProjectionExpression : "WaveformId",
+                    //RequestItems: {
+                    //    "MixGenius.Waveforms": {
+                    //        ProjectionExpression : "",
+                    //        ExpressionAttributeNames : {},
+                    //        Keys: pathSet.waveformids
+                    //    }
+                    //},
                     FilterExpression : "",
                     ExpressionAttributeNames : {},
                     ExpressionAttributeValues : {}
                 };
                 
+                //pathSet[2].forEach(function (key, idx) {
+                //    params.RequestItems["MixGenius.Waveforms"].ProjectionExpression += ",";
+                //    params.RequestItems["MixGenius.Waveforms"].ProjectionExpression += "#" + key;
+                //    params.RequestItems["MixGenius.Waveforms"].ExpressionAttributeNames["#" + key] = key
+                //});
+                
                 pathSet[2].forEach(function (key, idx) {
-                    params.ProjectionExpression = params.ProjectionExpression + ",";
-                    params.ProjectionExpression = params.ProjectionExpression + "#" + key;
+                    params.ProjectionExpression += ",";
+                    params.ProjectionExpression += "#" + key;
                     params.ExpressionAttributeNames["#" + key] = key
                 });
                 

@@ -3,19 +3,21 @@
     <!-- Do _not_  rely on this URL in production. Use only during development.  -->
     <script src="https://netflix.github.io/falcor/build/falcor.browser.js"></script>
     <script>
-      var model = new falcor.Model({source: new falcor.HttpDataSource('/model.json') });
+        var model = new falcor.Model({ source: new falcor.HttpDataSource('/model.json') });
 
-      model.
-     get("waveforms[0..10].['Name','Format'],waveforms.length").
-     then(function (response) {
-         console.log(response);
-     })
+        model.
+       get(
+           "waveforms[0..10].['Name','Format']"
+       ).
+       then(function (response) {
+           console.log(response);
+       })
 
-      //model.
-      //  get("waveformsById['0bbd870f-090e-4ec2-b592-4d6147f03379'].['Name','Format']").
-      //  then(function(response) {
-      //      console.log(response);
-      //  })
+        //model.
+        //  get("waveformsById['0bbd870f-090e-4ec2-b592-4d6147f03379'].['Name','Format']").
+        //  then(function(response) {
+        //      console.log(response);
+        //  })
     </script>
 </head>
 <body>
