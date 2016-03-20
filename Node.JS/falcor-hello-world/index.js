@@ -4,6 +4,8 @@ var AWS = require('aws-sdk-promise');
 var express = require('express');
 var StringBuilder = require('stringbuilder')
 var jsonGraph = require('falcor-json-graph');
+var _ = require('lodash');
+
 var $ref = jsonGraph.ref;
 var $error = jsonGraph.error;
 
@@ -16,10 +18,9 @@ AWS.config.update({ endpoint: "http://localhost:8002", region: "us-east-1" })
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
-    // create a Virtual JSON resource with single key ("greeting") 
-    return new Router([        
+    return new Router([                
         {
-            route: "waveforms",            
+            route: "waveforms[{integers:indices}]",            
             get : function (pathSet) {
                 var result = []
                 var params = {
@@ -33,11 +34,14 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                     if (err) {
                         console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
                     } else {
-                        response.data.Items.forEach(function (entry) {
-                            result.push({
-                                path: ["waveforms", entry.WaveformId], 
-                                value: $ref(["waveformsById", entry.WaveformId])
-                            });
+
+                        var items = response.data.Items;
+
+                        result = pathSet.indices.map(function (indice) { 
+                            return {
+                                path: ['waveforms', indice],
+                                value: $ref(["waveformsById", items[indice].WaveformId])
+                            };
                         });
                     }
                     
@@ -84,7 +88,7 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                                 
                                 if (entry[key]) {
                                     result.push({
-                                        path: ["waveforms", entry.WaveformId, key], 
+                                        path: ["waveformsById", entry.WaveformId, key], 
                                         value: entry[key]
 
                                     })
@@ -118,6 +122,7 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                     params.ExpressionAttributeValues[key] = id;
                 });
                 
+                
                 return docClient.scan(params)
                     .promise()
                     .then(function (response, err) {
@@ -125,9 +130,10 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                         console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
                     } else {
                         response.data.Items.forEach(function (entry) {
+                            
                             if (entry.OriginalWaveformId) {
                                 result.push({
-                                    path: ["waveforms", entry.WaveformId, 'Original'], 
+                                    path: ["waveformsById", entry.WaveformId, 'Original'], 
                                     value: $ref(["waveformsById", entry.OriginalWaveformId])
                                 });
                             }
@@ -166,13 +172,61 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                         console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
                     } else {
                         response.data.Items.forEach(function (entry) {
-                            if (entry.OriginalWaveformId) {
+                            if (entry.RawMasterWaveformId) {
                                 result.push({
-                                    path: ["waveforms", entry.WaveformId, 'RawMaster'], 
+                                    path: ["waveformsById", entry.WaveformId, 'RawMaster'], 
                                     value: $ref(["waveformsById", entry.RawMasterWaveformId])
                                 });
                             }
                         });
+                    }
+                    
+                    return result;
+                });
+            }
+        },
+        {
+            route: "waveformsById[{keys:waveformids}].Masters",            
+            get : function (pathSet) {
+                var result = []
+                
+                var params = {
+                    TableName : "MixGenius.Waveforms",
+                    ProjectionExpression : "WaveformId, OriginalWaveformId, RawMasterWaveformId",
+                    FilterExpression : "",
+                    ExpressionAttributeValues : {}
+                };
+                
+                pathSet.waveformids.forEach(function (id, idx) {
+                    if (idx > 0) {
+                        params.FilterExpression = params.FilterExpression + " OR ";
+                    }
+                    var key = ":id{0}".format(idx);
+                    params.FilterExpression = params.FilterExpression + "OriginalWaveformId = {0}".format(key);
+                    params.ExpressionAttributeValues[key] = id;
+                });
+                
+                return docClient.scan(params)
+                    .promise()
+                    .then(function (response, err) {
+                    if (err) {
+                        console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+                    } else {
+                        
+                        result = _(response.data.Items)
+                        .chain()
+                        .groupBy('OriginalWaveformId')
+                        .toPairs()
+                        .map(function (group) {
+                            return {
+                                path: ["waveformsById", group[0], 'Masters'], 
+                                value: _(group[1]).map(function (master) {
+                                    return $ref(["waveformsById", master.WaveformId])
+                                }).value()
+                            }
+                        })
+                        .value()
+                        ;
                     }
                     
                     return result;
@@ -183,6 +237,6 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
 }));
 
 //// serve static files from current directory 
-//app.use(express.static(__dirname + '/'));
+app.use(express.static(__dirname + '/'));
 
 var server = app.listen(3000);

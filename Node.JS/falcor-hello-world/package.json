@@ -1,19 +1,21 @@
 {
   "name": "falcor-hello-world",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "falcor-hello-world",
   "main": "app.js",
   "author": {
-    "name": "thoma",
-    "email": ""
+    "name": "thomas",
+    "email": "thomas.coville@gmail.com"
   },
   "dependencies": {
     "aws-sdk": "^2.2.45",
     "aws-sdk-promise": "0.0.2",
     "express": "3.4.4",
     "falcor-express": "^0.1.2",
+    "falcor-json-graph": "^1.1.7",
     "falcor-router": "^0.3.0",
     "jade": "*",
+    "lodash": "^4.6.1",
     "stringbuilder": "0.0.11",
     "stylus": "*"
   }
