@@ -6,7 +6,7 @@
       var model = new falcor.Model({source: new falcor.HttpDataSource('/model.json') });
 
       model.
-     get("waveforms[0..10].Name").
+     get("waveforms[0..10].['Name','Format'],waveforms.length").
      then(function (response) {
          console.log(response);
      })

@@ -15,10 +15,28 @@ StringBuilder.extend('string');
 
 AWS.config.update({ endpoint: "http://localhost:8002", region: "us-east-1" })
 
+var dynamodb = new AWS.DynamoDB();
 var docClient = new AWS.DynamoDB.DocumentClient();
 
 app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
-    return new Router([                
+    return new Router([  
+        {
+            route: "waveforms.Length",            
+            get : function (pathSet) {
+                var params = {
+                    TableName : "MixGenius.Waveforms",
+                };
+                
+                return dynamodb.describeTable(params)
+                .promise()
+                .then(function (response) {
+                    return {
+                        path: ['waveforms', 'Length'],
+                        value: response.data.Table.ItemCount
+                    };
+                });
+            }
+        },              
         {
             route: "waveforms[{integers:indices}]",            
             get : function (pathSet) {
@@ -34,10 +52,10 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                     if (err) {
                         console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
                     } else {
-
+                        
                         var items = response.data.Items;
-
-                        result = pathSet.indices.map(function (indice) { 
+                        
+                        result = pathSet.indices.map(function (indice) {
                             return {
                                 path: ['waveforms', indice],
                                 value: $ref(["waveformsById", items[indice].WaveformId])
