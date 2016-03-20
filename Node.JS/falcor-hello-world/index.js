@@ -21,7 +21,7 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
     return new Router([  
         {
-            route: "waveforms.Length",            
+            route: "Waveforms.Length",            
             get : function (pathSet) {
                 var params = {
                     TableName : "MixGenius.Waveforms",
@@ -38,12 +38,14 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
             }
         },              
         {
-            route: "waveforms[{integers:indices}]",            
+            route: "Library[{integers:indices}]",            
             get : function (pathSet) {
                 var result = []
                 var params = {
                     TableName : "MixGenius.Waveforms",
                     ProjectionExpression : "WaveformId",
+                    FilterExpression: "Kind = :k",
+                    ExpressionAttributeValues: { ":k" : "Mastered" }
                 };
                 
                 return docClient.scan(params)
@@ -167,7 +169,13 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                                     path: ["waveformsById", entry.WaveformId, 'Original'], 
                                     value: $ref(["waveformsById", entry.OriginalWaveformId])
                                 });
+                            } else {
+                                result.push({
+                                    path: ["waveformsById", entry.WaveformId, 'Original'], 
+                                    value: null
+                                });
                             }
+
                         });
                     }
                     
@@ -207,6 +215,11 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                                 result.push({
                                     path: ["waveformsById", entry.WaveformId, 'RawMaster'], 
                                     value: $ref(["waveformsById", entry.RawMasterWaveformId])
+                                });
+                            } else {
+                                result.push({
+                                    path: ["waveformsById", entry.WaveformId, 'RawMaster'], 
+                                    value: null
                                 });
                             }
                         });
