@@ -21,7 +21,7 @@ var docClient = new AWS.DynamoDB.DocumentClient();
 app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
     return new Router([  
         {
-            route: "Waveforms.Length",            
+            route: "library.Length",            
             get : function (pathSet) {
                 var params = {
                     TableName : "MixGenius.Waveforms",
@@ -31,21 +31,19 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                 .promise()
                 .then(function (response) {
                     return {
-                        path: ['waveforms', 'Length'],
+                        path: ['library', 'Length'],
                         value: response.data.Table.ItemCount
                     };
                 });
             }
         },              
         {
-            route: "Library[{integers:indices}]",            
+            route: "library[{integers:indices}]",            
             get : function (pathSet) {
                 var result = []
                 var params = {
                     TableName : "MixGenius.Waveforms",
                     ProjectionExpression : "WaveformId",
-                    FilterExpression: "Kind = :k",
-                    ExpressionAttributeValues: { ":k" : "Mastered" }
                 };
                 
                 return docClient.scan(params)
@@ -59,7 +57,7 @@ app.use('/model.json', falcorExpress.dataSourceRoute(function (req, res) {
                         
                         result = pathSet.indices.map(function (indice) {
                             return {
-                                path: ['waveforms', indice],
+                                path: ['library', indice],
                                 value: $ref(["waveformsById", items[indice].WaveformId])
                             };
                         });
